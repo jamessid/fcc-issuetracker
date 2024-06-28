@@ -13,11 +13,15 @@ module.exports = function (app) {
 
     .get(
       asyncHandler(async function (req, res) {
+        const query = { project: req.params.project };
+        // add in querystring fields
+        Object.assign(query, req.query);
+
         // find all issues with query params defined as filter.
         // strictQuery is set to true, so invalid fields not cast
         // According to docs, passing user defined objects is bad. See https://mongoosejs.com/docs/guide.html#strictQuery
         // Should I use destructuring instead, and populate filter object if keys exist? TODO?
-        const issues = await Issue.find(req.query)
+        const issues = await Issue.find(query, "-project")
           .setOptions({ sanitizeFilter: true })
           .exec();
 
@@ -37,6 +41,7 @@ module.exports = function (app) {
 
         // Create new issue
         const issue = new Issue({
+          project: req.params.project,
           issue_title: req.body.issue_title,
           issue_text: req.body.issue_text,
           created_by: req.body.created_by,
@@ -51,12 +56,18 @@ module.exports = function (app) {
           return;
         }
 
+        // TODO: only return required fields. Do this through method in Schema.
+
         await issue
           .save()
-          .then((savedDoc) => {
-            res.json(savedDoc);
-          })
+          .then(
+            asyncHandler(async function (savedDoc) {
+              // const reuturnDoc = await savedDoc.getReturnFields();
+              res.json(savedDoc.getReturnFields());
+            }),
+          )
           .catch((err) => {
+            console.log(err);
             res.json({
               error: "document not saved",
             });
@@ -111,9 +122,14 @@ module.exports = function (app) {
           return;
         }
 
+        // create updates object and include updated_on
+        const updates = {};
+        updates.updated_on = Date.now();
+        Object.assign(updates, req.body);
+
         // note, req.body will include _id. Should this be removed?
         // should I be creating a "fresh" object with only the schema keys?
-        const doc = await Issue.findByIdAndUpdate(req.body._id, req.body)
+        const doc = await Issue.findByIdAndUpdate(req.body._id, updates)
           .then(() =>
             res.json({
               result: "successfully updated",

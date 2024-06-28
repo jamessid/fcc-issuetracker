@@ -10,8 +10,9 @@ suite("Functional Tests", function () {
     chai
       .request(server)
       .keepOpen()
-      .post("/api/issues/apitest")
+      .post("/api/issues/functionaltesting")
       .send({
+        project: "Functional Testing Project",
         issue_title: "Functional testing",
         issue_text: "Functional testing text",
         created_by: "Test script",
