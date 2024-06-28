@@ -321,7 +321,7 @@ suite("Functional Tests", function () {
       .request(server)
       .keepOpen()
       .put("/api/issues/apitest")
-      .send({ _id: "Jessie" })
+      .send({ _id: "Jessie", issue_text: "valid update text" })
       .end(function (err, res) {
         assert.propertyVal(
           { error: res.body.error },

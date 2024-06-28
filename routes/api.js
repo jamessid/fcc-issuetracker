@@ -101,21 +101,21 @@ module.exports = function (app) {
         }
 
         for (const error of errors) {
-          if (
-            error.msg === "cannot cast _id to ObjectId" ||
-            error.msg === "cannot find _id"
-          ) {
-            res.json({ error: "could not update", _id: req.body.id });
-            return;
-          }
-        }
-
-        for (const error of errors) {
           if (error.msg === "At least one update field must be provided.") {
             res.json({ error: "no update field(s) sent", _id: req.body._id });
             return;
           }
         }
+
+        // for (const error of errors) {
+        //   if (
+        //     error.msg === "cannot cast _id to ObjectId" ||
+        //     error.msg === "cannot find _id"
+        //   ) {
+        //     res.json({ error: "could not update", _id: req.body.id });
+        //     return;
+        //   }
+        // }
 
         if (!result.isEmpty()) {
           res.json({ error: "could not update", _id: req.body._id });
